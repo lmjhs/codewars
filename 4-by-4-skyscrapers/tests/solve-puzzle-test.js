@@ -12,7 +12,7 @@ describe("Skyscrapers", function () {
                         [4, 2, 1, 3],
                         [3, 4, 2, 1],
                         [2, 1, 3, 4]];
-        var actual = solvePuzzle.solve(clues);
+        var actual = solvePuzzle.solvePuzzle(clues);
         assert(expected, actual);
     });
     it("can solve 4x4 puzzle 2", function () {
@@ -24,7 +24,7 @@ describe("Skyscrapers", function () {
                         [3, 4, 1, 2],
                         [4, 2, 3, 1],
                         [1, 3, 2, 4]];
-        var actual = solvePuzzle.solve(clues);
+        var actual = solvePuzzle.solvePuzzle(clues);
         assert(expected, actual);
     });
 });
