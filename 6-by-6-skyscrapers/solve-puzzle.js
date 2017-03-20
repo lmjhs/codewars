@@ -6,7 +6,7 @@ exports.solvePuzzle = function solvePuzzle(clues) {
     var that = this;
     this.row = row;
     this.column = column;
-    
+
     this.startingOptions = []
     for (i = 1; i <= size; i++) {
       this.startingOptions.push(i);
@@ -21,8 +21,8 @@ exports.solvePuzzle = function solvePuzzle(clues) {
     this.solve = function() {
       while (that.options.length > 0) {
         that.result = this.options.shift();
-        //console.log(grid.getResult());
-        // console.log('Result: ' + that.result);
+        // console.log(grid.getString());
+        // console.log(that.options);
         if (!that.row.hasDuplicates() && !that.column.hasDuplicates()) {
           return true;
         }
@@ -32,12 +32,13 @@ exports.solvePuzzle = function solvePuzzle(clues) {
     }
   }
 
-  function row(index) {
+  function row(index, grid) {
     this.index = index;
     this.leftClue = 0;
-    this.rightClue = 0; 
+    this.rightClue = 0;
     var that = this;
     this.cells = [];
+    this.grid = grid;
 
     this.addCell = function(cell) {
       this.cells.push(cell);
@@ -69,7 +70,7 @@ exports.solvePuzzle = function solvePuzzle(clues) {
         } else {
           cell--;
         }
-        
+
 
         // Its the end of the row so check that the row is valid
         if (cell == that.cells.length) {
@@ -91,7 +92,7 @@ exports.solvePuzzle = function solvePuzzle(clues) {
     this.hasDuplicates = function() {
       var seen = [];
       var valid = false;
-      
+
       that.cells.forEach(function(cell) {
         if (cell.result > 0 && seen.indexOf(cell.result) >= 0) {
           valid = true;
@@ -144,14 +145,74 @@ exports.solvePuzzle = function solvePuzzle(clues) {
       }
       return true;
     }
+
+    this.parseClues = function() {
+      if (that.leftClue == 1) {
+        that.cells[0].startingOptions = [that.cells.length];
+        that.cells[0].options = [that.cells.length];
+      }
+      if (that.rightClue == 1) {
+        that.cells[that.cells.length-1].startingOptions = [that.cells.length];
+        that.cells[that.cells.length-1].options = [that.cells.length];
+      }
+      if (that.leftClue > 1 && that.leftClue < that.cells.length) {
+        for (i = that.cells.length + 2 - that.topClue; i <= that.cells.length; i++) {
+          var index = that.cells[0].startingOptions.indexOf(i);
+          if (index > -1) {
+            that.cells[0].startingOptions.splice(index, 1);
+          }
+        }
+        that.cells[0].options = that.cells[0].startingOptions.slice();
+      }
+      if (that.rightClue > 1 && that.rightClue < that.cells.length) {
+        for (i = that.cells.length + 2 - that.topClue; i <= that.cells.length; i++) {
+          var index = that.cells[that.cells.length-1].startingOptions.indexOf(i);
+          if (index > -1) {
+            that.cells[that.cells.length-1].startingOptions.splice(index, 1);
+          }
+        }
+        that.cells[that.cells.length-1].options = that.cells[that.cells.length-1].startingOptions.slice();
+      }
+      if (that.leftClue == that.cells.length) {
+        for (i = 0; i < that.cells.length; i++) {
+          that.cells[i].startingOptions = [i+1];
+          that.cells[i].options = [i+1];
+          that.grid.columns[i].cells.forEach(function(cell, cellIndex) {
+            if (cellIndex != that.index - 1) {
+              var index = cell.startingOptions.indexOf(i+1);
+              if (index > -1) {
+                cell.startingOptions.splice(index, 1);
+                cell.options = cell.startingOptions.slice();
+              }
+            }
+          });
+        }
+      }
+      if (that.rightClue == that.cells.length) {
+        for (i = 0; i < that.cells.length; i++) {
+          that.cells[that.cells.length-1-i].startingOptions = [i+1];
+          that.cells[that.cells.length-1-i].options = [i+1];
+          that.grid.columns[that.cells.length-1-i].cells.forEach(function(cell, cellIndex) {
+            if (cellIndex != that.index - 1) {
+              var index = cell.startingOptions.indexOf(i+1);
+              if (index > -1) {
+                cell.startingOptions.splice(index, 1);
+                cell.options = cell.startingOptions.slice();
+              }
+            }
+          });
+        }
+      }
+    }
   }
 
-  function column(index) {
+  function column(index, grid) {
     var that = this;
     this.index = index;
     this.topClue = 0;
-    this.bottomClue = 0; 
+    this.bottomClue = 0;
     this.cells = [];
+    this.grid = grid;
 
     this.addCell = function(cell) {
       this.cells.push(cell);
@@ -160,7 +221,7 @@ exports.solvePuzzle = function solvePuzzle(clues) {
     this.hasDuplicates = function() {
       var seen = [];
       var valid = false;
-      
+
       that.cells.forEach(function(cell) {
         if (cell.result > 0 && seen.indexOf(cell.result) >= 0) {
           valid = true;
@@ -213,17 +274,77 @@ exports.solvePuzzle = function solvePuzzle(clues) {
       }
       return true;
     }
+
+    this.parseClues = function() {
+      if (that.topClue == 1) {
+        that.cells[0].startingOptions = [that.cells.length];
+        that.cells[0].options = [that.cells.length];
+      }
+      if (that.bottomClue == 1) {
+        that.cells[that.cells.length-1].startingOptions = [that.cells.length];
+        that.cells[that.cells.length-1].options = [that.cells.length];
+      }
+      if (that.topClue > 1 && that.topClue < that.cells.length) {
+        for (i = that.cells.length + 2 - that.topClue; i <= that.cells.length; i++) {
+          var index = that.cells[0].startingOptions.indexOf(i);
+          if (index > -1) {
+            that.cells[0].startingOptions.splice(index, 1);
+          }
+        }
+        that.cells[0].options = that.cells[0].startingOptions.slice();
+      }
+      if (that.bottomClue > 1 && that.bottomClue < that.cells.length) {
+        for (i = that.cells.length + 2 - that.topClue; i <= that.cells.length; i++) {
+          var index = that.cells[that.cells.length-1].startingOptions.indexOf(i);
+          if (index > -1) {
+            that.cells[that.cells.length-1].startingOptions.splice(index, 1);
+          }
+        }
+        that.cells[that.cells.length-1].options = that.cells[that.cells.length-1].startingOptions.slice();
+      }
+      if (that.topClue == 6) {
+        for (i = 0; i < that.cells.length; i++) {
+          that.cells[i].startingOptions = [i+1];
+          that.cells[i].options = [i+1];
+          that.grid.rows[i].cells.forEach(function(cell, cellIndex) {
+            if (cellIndex != that.index - 1) {
+              var index = cell.startingOptions.indexOf(i+1);
+              if (index > -1) {
+                cell.startingOptions.splice(index, 1);
+                cell.options = cell.startingOptions.slice();
+              }
+            }
+          });
+        }
+      }
+      if (that.bottomClue == 6) {
+        for (i = 0; i < that.cells.length; i++) {
+          that.cells[that.cells.length-1-i].startingOptions = [i+1];
+          that.cells[that.cells.length-1-i].options = [i+1];
+          that.grid.rows[that.cells.length-1-i].cells.forEach(function(cell, cellIndex) {
+            if (cellIndex != that.index - 1) {
+              var index = cell.startingOptions.indexOf(i+1);
+              if (index > -1) {
+                cell.startingOptions.splice(index, 1);
+                cell.options = cell.startingOptions.slice();
+              }
+            }
+          });
+        }
+      }
+    }
   }
 
   function grid(size, clues) {
     var that = this;
     this.columns = [];
     this.rows = [];
+    this.cells = [];
     this.size = size;
 
     for (i = 1; i <= size; i++) {
-      this.columns.push(new column(i));
-      this.rows.push(new row(i));
+      this.columns.push(new column(i, this));
+      this.rows.push(new row(i, this));
     }
 
     that.rows.forEach(function(row, rowIndex) {
@@ -231,6 +352,7 @@ exports.solvePuzzle = function solvePuzzle(clues) {
         var c = new cell(size, that.rows[rowIndex], that.columns[colIndex]);
         that.rows[rowIndex].cells.push(c);
         that.columns[colIndex].cells.push(c);
+        that.cells.push(c);
       });
     });
 
@@ -246,6 +368,14 @@ exports.solvePuzzle = function solvePuzzle(clues) {
       }
     });
 
+    that.rows.forEach(function(row) {
+      row.parseClues();
+    });
+
+    that.columns.forEach(function(column) {
+      column.parseClues();
+    });
+
     this.solve = function() {
       // that.rows[0].solve();
       var row = 0
@@ -257,8 +387,20 @@ exports.solvePuzzle = function solvePuzzle(clues) {
           // console.log('Failed Row');
           row--;
         }
+        process.stdout.clearLine();
+        process.stdout.cursorTo(0);
+        process.stdout.write(that.getString());
+        // console.log(that.getString());
       }
       return that.getResult();
+    }
+
+    this.getString = function() {
+      var result = []
+      that.getResult().forEach(function(row){
+        result.push(row.join(','));
+      });
+      return result.join('|');
     }
 
     this.getResult = function() {
@@ -271,5 +413,9 @@ exports.solvePuzzle = function solvePuzzle(clues) {
   }
 
   var grid = new grid(6, clues);
-  return grid.solve();
+
+  // console.log(grid.cells);
+
+  var results = grid.solve();
+  return results;
 }
